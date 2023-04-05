@@ -1,5 +1,5 @@
 version: '3.5'
-name: catalog
+#name: catalog
 
 services:
   catalogDb:
