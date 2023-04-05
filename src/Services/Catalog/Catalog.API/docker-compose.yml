@@ -6,8 +6,8 @@ services:
     container_name: ps_catalogdb
     image: mongo
     restart: always
-    volumes:
-      - catalog_db_vol:
+    #volumes:
+      #- catalog_db_vol:
           # ports:
           #   - "2258:27017"
 
