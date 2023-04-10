@@ -10,6 +10,16 @@ services:
       - catalog_db_vol:/bin/db/
           # ports:
           #   - "2258:27017"
+    
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce
+    ports:
+      - 8050:8000
+      - 9001:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_vol:/data
 
   catalogApi:
     container_name: ps_catalogApi
@@ -28,4 +38,6 @@ services:
       - catalogDb
 
 volumes:
-  catalog_db_vol: {}
+  catalog_db_vol:
+  portainer_vol:
+    #external: true
