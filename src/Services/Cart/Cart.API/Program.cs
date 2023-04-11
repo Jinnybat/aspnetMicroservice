@@ -10,9 +10,10 @@ builder.Services.AddControllers();
 // Learn moregit about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddStackExchangeRedisCache(options=>
+builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost";
+    options.Configuration = "cartapicache.redis.cache.windows.net:6380,password=m7D2aJikTafkYg0F9NFjd6WU8zjY2xvxFAzCaFp1aL4=,ssl=True,abortConnect=False";
+    options.InstanceName = "SampleInstance";
 });
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 

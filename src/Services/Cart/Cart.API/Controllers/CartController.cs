@@ -3,7 +3,7 @@ using Cart.API.Entities;
 using Cart.API.Repository;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Cart.API.Controller;
+namespace Cart.API.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]

@@ -8,5 +8,5 @@ public interface ICartRepository
 
     Task<Basket> UpdateBasket(Basket basket);
 
-    Task<Basket> RemoveBasket(string userName);
+    Task RemoveBasket(string userName);
 }

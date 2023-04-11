@@ -21,9 +21,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_vol:/data
 
-  redis:
-    container_name: redis
-    image: redis
+  # redis:
+  #   container_name: redis
+  #   image: redis
+  #   ports:
+  #     - 9002:6379
 
   catalogApi:
     container_name: ps_catalogApi
@@ -32,7 +34,7 @@ services:
        context: ..
        dockerfile: ./Services/Catalog/Catalog.API/Dockerfile
     ports:
-      - "9000:80"
+      - "5000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DatabaseSettings__ConnectionString=mongodb://catalogDb:27017
@@ -40,6 +42,22 @@ services:
       - DatabaseSettings__CollectionName=Products
     depends_on:
       - catalogDb
+  
+  cartapi:
+    container_name: ps_cartapi
+    image: jinnybat/dotnet-microservice
+    build:
+       context: ..
+       dockerfile: ./Services/Cart/Cart.API/Dockerfile
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      #- DatabaseSettings__ConnectionString=mongodb://catalogDb:27017
+      #- DatabaseSettings__DatabaseName=ProductDb
+      #- DatabaseSettings__CollectionName=Products
+    # depends_on:
+    #   - redis
 
 volumes:
   catalog_db_vol:

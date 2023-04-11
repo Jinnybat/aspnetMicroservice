@@ -16,16 +16,17 @@ public class CartRepository : ICartRepository
     public async Task<Basket> GetBasket(string userName)
     {
         var value = await redis.GetStringAsync(userName);
+        if(string.IsNullOrEmpty(value))
+            return null;
 
         var basket = JsonSerializer.Deserialize<Basket>(value);
         return basket;
     }
 
-    public async Task<Basket> RemoveBasket(string userName)
+    public async Task RemoveBasket(string userName)
     {
         await redis.RemoveAsync(userName);
 
-        return await GetBasket(userName);
     }
 
     public async Task<Basket> UpdateBasket(Basket basket)
