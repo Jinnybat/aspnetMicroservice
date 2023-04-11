@@ -21,6 +21,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_vol:/data
 
+  redis:
+    container_name: redis
+    image: redis
+
   catalogApi:
     container_name: ps_catalogApi
     image: jinnybat/dotnet-microservice
