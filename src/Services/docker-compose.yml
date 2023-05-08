@@ -5,9 +5,10 @@ services:
   catalogDb:
     container_name: ps_catalogdb
     image: mongo
-    restart: always
+    #restart: always
     volumes:
-      - catalog_db_vol:/bin/db/
+      - catalog_db_vol:/data/db/
+      # - catalog_db_vol:/bin/db/
           # ports:
           #   - "2258:27017"
     
@@ -21,15 +22,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_vol:/data
 
-  # redis:
-  #   container_name: redis
-  #   image: redis
-  #   ports:
-  #     - 9002:6379
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 9002:6379
 
   catalogApi:
     container_name: ps_catalogApi
-    image: jinnybat/dotnet-microservice
+    image: jinnybat/dotnet-microservice-catalogapi
     build:
        context: ..
        dockerfile: ./Services/Catalog/Catalog.API/Dockerfile
@@ -45,7 +46,7 @@ services:
   
   cartapi:
     container_name: ps_cartapi
-    image: jinnybat/dotnet-microservice
+    image: jinnybat/dotnet-microservice-cartapi
     build:
        context: ..
        dockerfile: ./Services/Cart/Cart.API/Dockerfile
@@ -56,10 +57,10 @@ services:
       #- DatabaseSettings__ConnectionString=mongodb://catalogDb:27017
       #- DatabaseSettings__DatabaseName=ProductDb
       #- DatabaseSettings__CollectionName=Products
-    # depends_on:
-    #   - redis
+    depends_on:
+      - redis
 
 volumes:
-  catalog_db_vol:
-  portainer_vol:
+  catalog_db_vol: {}
+  portainer_vol: {}
     #external: true
