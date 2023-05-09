@@ -12,8 +12,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "cartapicache.redis.cache.windows.net:6380,password=m7D2aJikTafkYg0F9NFjd6WU8zjY2xvxFAzCaFp1aL4=,ssl=True,abortConnect=False";
-    options.InstanceName = "SampleInstance";
+    options.Configuration = builder.Configuration["AppSetting:RedisConnection"];
+    //options.Configuration = "https://jinnybat-super-space-sniffle-w9j9577757ph969w-9002.preview.app.github.dev/";
+
+     options.InstanceName = builder.Configuration["AppSetting:RedisInstanceName"];
 });
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
