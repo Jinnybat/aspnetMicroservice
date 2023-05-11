@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cart", "Cart", "{CB609A72-C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cart.API", "src\Services\Cart\Cart.API\Cart.API.csproj", "{1360FB28-C2BF-4213-BC3C-5470F15E4A31}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cart.API.Tests", "src\Services\Cart\Cart.API.Tests\Cart.API.Tests.csproj", "{8E3CBAAC-E0F7-401B-A1FF-D87194EBB03E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{1360FB28-C2BF-4213-BC3C-5470F15E4A31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1360FB28-C2BF-4213-BC3C-5470F15E4A31}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1360FB28-C2BF-4213-BC3C-5470F15E4A31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E3CBAAC-E0F7-401B-A1FF-D87194EBB03E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E3CBAAC-E0F7-401B-A1FF-D87194EBB03E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E3CBAAC-E0F7-401B-A1FF-D87194EBB03E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E3CBAAC-E0F7-401B-A1FF-D87194EBB03E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +47,7 @@ Global
 		{D26BE320-C91F-4920-86FD-DD379F190FAD} = {DFBCECF1-20C9-4859-8210-6EF4A41C2217}
 		{CB609A72-C6F1-4F6D-8D3B-64CF57069CF4} = {D26BE320-C91F-4920-86FD-DD379F190FAD}
 		{1360FB28-C2BF-4213-BC3C-5470F15E4A31} = {CB609A72-C6F1-4F6D-8D3B-64CF57069CF4}
+		{8E3CBAAC-E0F7-401B-A1FF-D87194EBB03E} = {CB609A72-C6F1-4F6D-8D3B-64CF57069CF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {41A6CB0C-23B9-47EE-999D-9EF7180BDF86}
