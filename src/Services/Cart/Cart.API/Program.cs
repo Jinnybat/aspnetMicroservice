@@ -12,10 +12,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["AppSetting:RedisConnection"];
-    //options.Configuration = "https://jinnybat-super-space-sniffle-w9j9577757ph969w-9002.preview.app.github.dev/";
+    // options.Configuration = builder.Configuration["AppSetting:RedisConnection"];
+    // options.InstanceName = builder.Configuration["AppSetting:RedisInstanceName"];
 
-     options.InstanceName = builder.Configuration["AppSetting:RedisInstanceName"];
+    options.Configuration = "https://reimagined-parakeet-4g9gv777vrvh77v5-9002.app.github.dev/";
+    options.InstanceName = "SampleInstance";
+
+
 });
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
