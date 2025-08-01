@@ -2,5 +2,5 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
   },
-  "forwardPorts" : [9001]
+  "forwardPorts" : [9001,4200]
 }
