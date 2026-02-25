@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samplicity Ecosystem Map</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f0f6fc;
+  --white:     #ffffff;
+  --blue-dark: #0a4a7c;
+  --blue-mid:  #1a6aaa;
+  --blue:      #2e8fd4;
+  --blue-lt:   #5aade8;
+  --blue-pale: #d6eaf8;
+  --blue-xs:   #eaf4fb;
+  --teal:      #0e9f9f;
+  --green:     #1aaa6e;
+  --orange:    #e07b2a;
+  --purple:    #7c58c8;
+  --amber:     #c8920a;
+  --gray:      #6b8aaa;
+  --gray-lt:   #b8cfe4;
+  --border:    #cce0f0;
+  --shadow:    rgba(10,74,124,0.10);
+  --text:      #1a3a5c;
+  --text-dim:  #5a7a9a;
+}
+
+html, body { width:100%; height:100%; background:var(--bg); font-family:'Inter',sans-serif; color:var(--text); overflow:hidden; }
+
+/* TOP BAR */
+#topbar {
+  position:fixed; top:0; left:0; right:0; height:54px;
+  background:var(--blue-dark);
+  display:flex; align-items:center; padding:0 24px; gap:16px;
+  z-index:200; box-shadow:0 2px 12px rgba(10,74,124,0.3);
+}
+#topbar h1 { font-family:'Sora',sans-serif; font-size:15px; font-weight:700; letter-spacing:3px; color:#fff; text-transform:uppercase; }
+#topbar .sub { font-size:11px; color:rgba(255,255,255,0.45); letter-spacing:1px; border-left:1px solid rgba(255,255,255,0.18); padding-left:16px; }
+.sp { flex:1; }
+.btn {
+  background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+  color:rgba(255,255,255,0.85); padding:6px 14px; border-radius:5px;
+  cursor:pointer; font-family:'Inter',sans-serif; font-size:11px; font-weight:500;
+  transition:background 0.2s; white-space:nowrap;
+}
+.btn:hover { background:rgba(255,255,255,0.22); }
+
+/* VIEWPORT */
+#viewport {
+  position:fixed; inset:54px 0 0 0;
+  overflow:hidden; cursor:grab; background:var(--bg);
+  background-image: radial-gradient(circle at 20% 40%, rgba(46,143,212,0.06) 0%, transparent 55%),
+                    radial-gradient(circle at 80% 70%, rgba(10,74,124,0.05) 0%, transparent 50%);
+}
+#viewport.dragging { cursor:grabbing; }
+
+#world { position:absolute; transform-origin:0 0; }
+
+svg#lines { position:absolute; top:0; left:0; width:9000px; height:7000px; pointer-events:none; overflow:visible; }
+
+/* NODES */
+.node {
+  position:absolute;
+  transform:translate(0,-50%);
+  cursor:pointer;
+}
+
+.node-card {
+  background:var(--white);
+  border:1.5px solid var(--border);
+  border-radius:9px;
+  padding:11px 14px 11px 18px;
+  min-width:158px; max-width:190px;
+  box-shadow:0 2px 12px var(--shadow);
+  position:relative;
+  transition:box-shadow 0.2s, transform 0.15s;
+  user-select:none;
+}
+.node:hover .node-card { box-shadow:0 6px 24px rgba(10,74,124,0.15); transform:translateY(-2px); }
+.node.selected .node-card { border-color:var(--node-color, var(--blue)); box-shadow:0 0 0 3px rgba(46,143,212,0.18), 0 6px 20px var(--shadow); }
+
+.node-card::before { content:''; position:absolute; left:0; top:10px; bottom:10px; width:4px; border-radius:0 2px 2px 0; background:var(--node-color, var(--blue)); }
+
+.node-code { font-family:'Sora',sans-serif; font-weight:700; font-size:12.5px; color:var(--node-color, var(--blue-dark)); letter-spacing:0.3px; }
+.node-label { font-size:10px; color:var(--text-dim); margin-top:3px; line-height:1.45; }
+.node-portal {
+  display:inline-block; margin-top:7px;
+  font-size:9px; padding:2px 8px; border-radius:3px;
+  background:var(--blue-xs); color:var(--blue-mid);
+  border:1px solid var(--blue-pale);
+}
+.node-tbd {
+  display:inline-block; margin-top:7px;
+  font-size:9px; padding:2px 8px; border-radius:3px;
+  background:#f8f9fa; color:var(--gray);
+  border:1px dashed var(--gray-lt); font-style:italic;
+}
+
+/* expand button on right edge */
+.xbtn {
+  position:absolute; right:-12px; top:50%; transform:translateY(-50%);
+  width:23px; height:23px; border-radius:50%;
+  background:var(--node-color, var(--blue)); color:#fff;
+  border:2.5px solid var(--white);
+  font-size:13px; font-weight:700; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(10,74,124,0.22);
+  transition:transform 0.2s, background 0.2s;
+  z-index:5; cursor:pointer;
+}
+.node.open .xbtn { background:var(--gray); }
+
+/* ROOT */
+.node-root .node-card { background:var(--blue-dark); border-color:transparent; box-shadow:0 4px 20px rgba(10,74,124,0.35); min-width:170px; }
+.node-root .node-card::before { background:rgba(255,255,255,0.5); }
+.node-root .node-code { color:#fff; font-size:16px; letter-spacing:1px; }
+.node-root .node-label { color:rgba(255,255,255,0.6); }
+/* L1 */
+.node-l1 .node-card { background:var(--blue-mid); border-color:transparent; box-shadow:0 3px 15px rgba(26,106,170,0.3); }
+.node-l1 .node-card::before { background:rgba(255,255,255,0.45); }
+.node-l1 .node-code { color:#fff; font-size:14px; }
+.node-l1 .node-label { color:rgba(255,255,255,0.65); }
+
+/* DETAIL PANEL */
+#detail {
+  position:fixed; right:0; top:54px; bottom:0; width:315px;
+  background:var(--white); border-left:1px solid var(--border);
+  transform:translateX(100%); transition:transform 0.3s cubic-bezier(.4,0,.2,1);
+  z-index:150; overflow-y:auto; box-shadow:-4px 0 20px rgba(10,74,124,0.08);
+}
+#detail.open { transform:translateX(0); }
+
+.dh {
+  background:var(--blue-dark); padding:22px 20px 16px;
+  position:sticky; top:0; z-index:2;
+}
+.dc-btn {
+  float:right; background:rgba(255,255,255,0.14); border:none;
+  color:#fff; cursor:pointer; width:28px; height:28px; border-radius:4px;
+  font-size:13px; display:flex; align-items:center; justify-content:center;
+}
+.dc-btn:hover { background:rgba(255,255,255,0.26); }
+.d-code { font-family:'Sora',sans-serif; font-weight:700; font-size:19px; color:#fff; letter-spacing:0.5px; }
+.d-full { font-size:10px; color:rgba(255,255,255,0.5); margin-top:4px; line-height:1.5; }
+.d-body { padding:20px; }
+.d-sec { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--gray); margin:18px 0 7px; font-weight:600; }
+.d-desc { font-size:12px; line-height:1.8; color:var(--text); }
+.d-portal {
+  display:block; margin-top:10px; padding:9px 13px;
+  background:var(--blue-xs); border:1px solid var(--blue-pale); border-radius:6px;
+  font-size:11px; color:var(--blue-mid); text-decoration:none;
+}
+.d-portal:hover { background:var(--blue-pale); }
+.d-div { height:1px; background:var(--border); margin:16px 0; }
+.tag { display:inline-block; font-size:9px; padding:3px 9px; border-radius:3px; margin:2px; border:1px solid; }
+.ta { color:#0e7e4a; border-color:#b7e8d0; background:#edfaf3; }
+.tl { color:#9a5200; border-color:#f5d9aa; background:#fef6ea; }
+.tn { color:#0e5e9a; border-color:#b0d8f5; background:#eaf4fb; }
+.tt { color:var(--gray); border-color:var(--gray-lt); background:#f5f7fa; }
+.child-row {
+  display:flex; align-items:center; gap:9px;
+  padding:8px 11px; border-radius:6px; margin-bottom:5px;
+  cursor:pointer; background:var(--bg); border:1px solid var(--border);
+  font-size:11px; color:var(--text); transition:background 0.15s;
+}
+.child-row:hover { background:var(--blue-pale); border-color:var(--blue-pale); }
+.cdot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+/* LEGEND */
+#legend {
+  position:fixed; bottom:20px; left:20px;
+  background:var(--white); border:1px solid var(--border); border-radius:8px;
+  padding:13px 16px; font-size:10px; color:var(--text-dim);
+  box-shadow:0 2px 12px var(--shadow); z-index:100; line-height:2.1;
+}
+#legend b { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--gray); display:block; margin-bottom:5px; }
+.lr { display:flex; align-items:center; gap:8px; }
+.lb { width:16px; height:3.5px; border-radius:2px; }
+
+/* HINT */
+#hint {
+  position:fixed; bottom:20px; right:20px;
+  background:var(--white); border:1px solid var(--border); border-radius:8px;
+  padding:11px 15px; font-size:10px; color:var(--text-dim);
+  box-shadow:0 2px 12px var(--shadow); z-index:100; line-height:2;
+}
+#hint strong { color:var(--text); }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>Samplicity</h1>
+  <span class="sub">Marketing &amp; Sample Management — Ecosystem Map</span>
+  <div class="sp"></div>
+  <button class="btn" onclick="expandAll()">Expand All</button>
+  <button class="btn" onclick="collapseAll()">Collapse All</button>
+  <button class="btn" onclick="resetView()">⟳ Reset</button>
+</div>
+
+<div id="viewport">
+  <div id="world">
+    <svg id="lines"><defs></defs></svg>
+  </div>
+</div>
+
+<div id="detail">
+  <div class="dh">
+    <button class="dc-btn" onclick="closeDetail()">✕</button>
+    <div class="d-code" id="d-code"></div>
+    <div class="d-full" id="d-full"></div>
+  </div>
+  <div class="d-body" id="d-body"></div>
+</div>
+
+<div id="legend">
+  <b>Legend</b>
+  <div class="lr"><div class="lb" style="background:#0a4a7c"></div>Core System</div>
+  <div class="lr"><div class="lb" style="background:#1a6aaa"></div>Platform Brand</div>
+  <div class="lr"><div class="lb" style="background:#2e8fd4"></div>Active Channel</div>
+  <div class="lr"><div class="lb" style="background:#e07b2a"></div>Pending Channel</div>
+  <div class="lr"><div class="lb" style="background:#c8920a"></div>Infrastructure</div>
+  <div class="lr"><div class="lb" style="background:#7c58c8"></div>Reporting / Analytics</div>
+</div>
+
+<div id="hint">
+  <strong>Click</strong> node to expand / collapse<br>
+  <strong>Double-click</strong> for full details<br>
+  <strong>Drag</strong> to pan &nbsp;·&nbsp; <strong>Scroll</strong> to zoom
+</div>
+
+<script>
+// ── TREE DATA ────────────────────────────────────────────────────────────────
+ const T = {
+  id:'msm',code:'MSM',label:'Marketing &\nSample Management',color:'#0a4a7c',cls:'node-root',
+  d:{full:'Marketing and Sample Management',desc:'The MSM platform — known as the Samplicity ecosystem — provides end-to-end pharmaceutical sample distribution management across all channels, from practitioners and representatives to consumers and hospitals.',tags:[{l:'Core Platform',c:'ta'}]},
+  ch:[{
+    id:'samplicity',code:'SAMPLICITY',label:'Unified Brand Ecosystem',color:'#1a6aaa',cls:'node-l1',
+    d:{full:'Samplicity Ecosystem',desc:'The overarching brand umbrella for the MSM platform. Samplicity unifies all distribution channels and infrastructure systems under a single strategic framework for consistent sample management across every touchpoint.',tags:[{l:'Brand Umbrella',c:'ta'}]},
+    ch:[
+      {
+        id:'channels',code:'CHANNELS',label:'Distribution Channels',color:'#2e8fd4',
+        d:{full:'Distribution Channels',desc:'Four distinct channels route product samples and materials to different recipient types — practitioners, representatives, consumers, and hospitals.'},
+        ch:[
+          {id:'dtp',code:'DTP',label:'Direct to Practitioner',color:'#2e8fd4',portal:'MySampleCloset.com',
+            d:{full:'Direct to Practitioner',desc:'An e-sampling portal enabling healthcare practitioners to request product samples, support materials, and literature directly from the manufacturer. Streamlines the traditional rep-mediated sample process.',portalUrl:'https://MySampleCloset.com',tags:[{l:'Active',c:'ta'},{l:'Operational',c:'ta'}]},
+            ch:[{id:'msc',code:'MySampleCloset.com',label:'Practitioner Portal',color:'#2e8fd4',
+              d:{full:'MySampleCloset.com — Practitioner Portal',desc:'The practitioner-facing web portal. Practitioners log in to browse samples, submit requests, view order history, and access product literature and support materials.'},
+              ch:[
+                {id:'msc-r',code:'Sample Requests',label:'Browse & request\nproduct samples',color:'#2e8fd4',d:{full:'Sample Request Management',desc:'Practitioners browse the product catalog and submit requests for physical samples. Requests flow into KFIS for business rule validation and fulfillment processing.'},ch:[]},
+                {id:'msc-l',code:'Literature',label:'Support materials\n& product info',color:'#2e8fd4',d:{full:'Literature & Support Materials',desc:'Product literature, prescribing information, and educational materials accessible alongside sample requests.'},ch:[]},
+                {id:'msc-h',code:'Order History',label:'Track orders\n& delivery status',color:'#2e8fd4',d:{full:'Order History & Tracking',desc:'Practitioners review historical requests, track current orders, and view delivery status — all tied into the SIMS sample accountability framework.'},ch:[]}
+              ]}
+            ]},
+          {id:'dtr',code:'DTR',label:'Direct to Representative',color:'#0e9f9f',portal:'MyRepCenter.com',
+            d:{full:'Direct to Representative',desc:'A business rule-based sales representative portal for ordering samples and product literature. Reps manage their own sample inventories and distribution to the practitioners they call on.',portalUrl:'https://MyRepCenter.com',tags:[{l:'Active',c:'ta'},{l:'Operational',c:'ta'}]},
+            ch:[{id:'mrc',code:'MyRepCenter.com',label:'Sales Rep Portal',color:'#0e9f9f',
+              d:{full:'MyRepCenter.com — Sales Rep Portal',desc:'The sales representative portal. Reps manage sample inventory, place orders, distribute to practitioners, and comply with PDMA regulatory requirements.'},
+              ch:[
+                {id:'mrc-i',code:'Inventory Mgmt',label:'Track & manage\nsample inventory',color:'#0e9f9f',d:{full:'Sample Inventory Management',desc:'Representatives manage current inventory levels, track dispensed samples, and reconcile against SIMS accountability records.'},ch:[]},
+                {id:'mrc-r',code:'Business Rules',label:'Eligibility &\nquota enforcement',color:'#0e9f9f',d:{full:'Business Rule Engine',desc:'Configurable rules govern what samples reps can order based on territory, quota, product allocations, and compliance status.'},ch:[]},
+                {id:'mrc-p',code:'PDMA Compliance',label:'Regulatory\naudit trail',color:'#0e9f9f',d:{full:'PDMA Compliance Tracking',desc:'All rep sample activities are tracked per the Prescription Drug Marketing Act (PDMA), with complete audit trails feeding into SIMS.'},ch:[]}
+              ]}
+            ]},
+          {id:'dtc',code:'DTC',label:'Direct to Consumer',color:'#e07b2a',portal:'TBD',
+            d:{full:'Direct to Consumer',desc:'An integrated patient portal whereby consumers can order OTC medications directly from the manufacturer. The specific portal platform is currently under evaluation.',tags:[{l:'Pending',c:'tt'},{l:'Portal TBD',c:'tt'}]},
+            ch:[
+              {id:'dtc-p',code:'Consumer Portal',label:'Platform pending\nselection',color:'#e07b2a',d:{full:'Consumer Portal — TBD',desc:'The consumer-facing portal for direct OTC medication ordering. Platform selection is under evaluation. Will integrate with KFIS for order processing and SIMS for tracking.'},ch:[]},
+              {id:'dtc-o',code:'OTC Direct Orders',label:'Direct manufacturer\nto patient ordering',color:'#e07b2a',d:{full:'OTC Medication Direct Ordering',desc:'Enables consumers to browse and order OTC medications directly from the manufacturer, bypassing traditional retail channels.'},ch:[]}
+            ]},
+          {id:'dth',code:'DTH',label:'Direct to Hospital',color:'#7c58c8',portal:'TBD',
+            d:{full:'Direct to Hospital',desc:'A hospital-focused distribution channel for direct product sample delivery to hospital systems and pharmacy departments. Portal and full specification are being identified.',tags:[{l:'Pending',c:'tt'},{l:'Portal TBD',c:'tt'}]},
+            ch:[
+              {id:'dth-p',code:'Hospital Portal',label:'Institutional portal\n(TBD)',color:'#7c58c8',d:{full:'Hospital Portal — TBD',desc:'Institution-facing portal supporting bulk ordering, formulary integration, and pharmacy department management. Specifications pending.'},ch:[]},
+              {id:'dth-f',code:'Formulary Integ.',label:'Approved formulary\nlist integration',color:'#7c58c8',d:{full:'Hospital Formulary Integration',desc:'Planned integration with hospital formulary systems to streamline product sample requisition within institutional settings.'},ch:[]}
+            ]}
+        ]
+      },
+      {
+        id:'infra',code:'INFRASTRUCTURE',label:'Core Infrastructure',color:'#c8920a',
+        d:{full:'Core Infrastructure Systems',desc:'Three backbone systems power the entire Samplicity ecosystem: sample accountability (SIMS), order fulfillment (KFIS), and enterprise analytics (KADABRA).'},
+        ch:[
+          {id:'sims',code:'SA / SIMS',label:'Sample Accountability',color:'#c8920a',portal:'client.sims.knipper.com',
+            d:{full:'Sample Inventory Management System',desc:'A rock-solid sample accountability module ensuring full PDMA compliance. Tracks all sample movements from manufacturer through to final recipient with a complete audit trail.',portalUrl:'http://client.sims.knipper.com',tags:[{l:'SIMS 1.0 Legacy',c:'tl'},{l:'SIMS 3.0 Latest',c:'tn'}]},
+            ch:[
+              {id:'sims1',code:'SIMS 1.0',label:'Legacy platform\n(being phased out)',color:'#c8920a',d:{full:'SIMS 1.0 — Legacy Platform',desc:'The original SIMS platform. Still accessible for legacy data and historical records. Being phased out in favour of SIMS 3.0.',tags:[{l:'Legacy',c:'tl'}]},ch:[]},
+              {id:'sims3',code:'SIMS 3.0',label:'Current active\nplatform',color:'#c8920a',d:{full:'SIMS 3.0 — Current Platform',desc:'The current and actively developed platform at client.sims.knipper.com. Full PDMA-compliant tracking, reconciliation, and audit reporting.',tags:[{l:'Latest',c:'tn'},{l:'Active',c:'ta'}]},ch:[]},
+              {id:'sims-a',code:'PDMA Audit Trail',label:'Compliance &\naudit reporting',color:'#c8920a',d:{full:'PDMA Compliance & Audit Trail',desc:'Comprehensive audit trail ensuring all sample transactions meet PDMA requirements. Includes practitioner signature capture, lot tracking, and regulatory report generation.'},ch:[]}
+            ]},
+          {id:'kfis',code:'KFIS',label:'Knipper Fulfillment\nInformation System',color:'#1aaa6e',
+            d:{full:'Knipper Fulfillment Information System',desc:'A robust business rules and order processing engine guaranteeing timely, accurate, and compliant distribution across all Samplicity channels. Central order orchestration layer.',tags:[{l:'Operational',c:'ta'}]},
+            ch:[
+              {id:'kfis-r',code:'Rules Engine',label:'Order eligibility\n& validation',color:'#1aaa6e',d:{full:'Business Rules Engine',desc:'Configurable rule sets govern all order processing — eligibility checks, quantity limits, geographic restrictions, product allocations, and compliance holds.'},ch:[]},
+              {id:'kfis-o',code:'Order Processing',label:'Full lifecycle\norder management',color:'#1aaa6e',d:{full:'Order Processing Engine',desc:'Handles the complete order lifecycle from submission through validation, warehouse pick-and-pack, carrier routing, and delivery confirmation.'},ch:[]},
+              {id:'kfis-d',code:'Distribution Mgmt',label:'Compliant &\naccurate fulfillment',color:'#1aaa6e',d:{full:'Compliant Distribution Management',desc:'Ensures all fulfillment meets regulatory and contractual standards, with automated hold logic and escalation workflows for compliance exceptions.'},ch:[]}
+            ]},
+          {id:'kadabra',code:'KADABRA',label:'Advanced Analytics\n& Reporting',color:'#7c58c8',
+            d:{full:'Knipper Advanced Data Analytics Business Reporting Application',desc:'A dynamic enterprise reporting suite providing access to all sample-related data across the entire Samplicity ecosystem in an easy-to-use interface.',tags:[{l:'Operational',c:'ta'}]},
+            ch:[
+              {id:'kad-d',code:'Dashboards',label:'Real-time KPI\n& performance views',color:'#7c58c8',d:{full:'Executive Dashboards',desc:'High-level KPI dashboards providing real-time visibility into sample program performance, channel throughput, compliance metrics, and inventory status.'},ch:[]},
+              {id:'kad-r',code:'Reports',label:'Standard &\nscheduled reports',color:'#7c58c8',d:{full:'Standard Report Library',desc:'Pre-built templates covering sample activity, PDMA compliance, inventory reconciliation, rep performance, and channel analytics. Schedulable for automated distribution.'},ch:[]},
+              {id:'kad-a',code:'Ad Hoc Query',label:'Self-service\ndata exploration',color:'#7c58c8',d:{full:'Ad Hoc Query & Analysis',desc:'Self-service query capabilities enabling analysts to explore the full sample data universe with custom filters, groupings, and export to Excel/PDF.'},ch:[]}
+            ]}
+        ]
+      }
+    ]
+  }]
+};
+
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const NW=186, HGAP=72, VGAP=16;
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+const open=new Set(['msm','samplicity']);
+let sel=null, els={}, pos={};
+let pan={x:80,y:40}, zoom=1;
+let drag=false, ds={x:0,y:0}, ps={x:0,y:0};
+
+// ── NODE HEIGHT ───────────────────────────────────────────────────────────────
+function nh(n){
+  if(n.cls==='node-root') return 70;
+  if(n.cls==='node-l1')   return 64;
+  if(n.portal)            return 80;
+  return 64;
+}
+
+// ── LAYOUT ───────────────────────────────────────────────────────────────────
+function subH(n){
+  if(!open.has(n.id)||!n.ch.length) return nh(n);
+  let t=0; n.ch.forEach((c,i)=>{ t+=subH(c); if(i<n.ch.length-1) t+=VGAP; });
+  return Math.max(t,nh(n));
+}
+
+function layout(n,x,y){
+  const h=nh(n), bH=subH(n);
+  pos[n.id]={x, y:y+(bH-h)/2, h, bH};
+  if(open.has(n.id)&&n.ch.length){
+    const cx=x+NW+HGAP; let cy=y;
+    n.ch.forEach(c=>{ layout(c,cx,cy); cy+=subH(c)+VGAP; });
+  }
+}
+
+function computeLayout(){
+  pos={};
+  const vh=window.innerHeight-54;
+  const rH=subH(T);
+  const sy=Math.max(40,(vh/zoom-rH)/2);
+  layout(T,40,sy);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  computeLayout();
+  const world=document.getElementById('world');
+  const svg=document.getElementById('lines');
+  world.style.transform=`translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
+
+  // clear lines
+  const defs=svg.querySelector('defs');
+  svg.innerHTML=''; svg.appendChild(defs);
+
+  const visIds=new Set(Object.keys(pos));
+  Object.keys(els).forEach(id=>{ if(!visIds.has(id)){els[id].remove();delete els[id];} });
+
+  function drawLines(n){
+    if(!open.has(n.id)||!n.ch.length) return;
+    const p=pos[n.id];
+    n.ch.forEach(c=>{
+      const cp=pos[c.id]; if(!p||!cp) return;
+      const x1=p.x+NW, y1=p.y+p.h/2;
+      const x2=cp.x,   y2=cp.y+cp.h/2;
+      const mx=(x1+x2)/2;
+
+      // add marker
+      const mid=`m${c.id.replace(/[^a-z0-9]/g,'')}`;
+      const mk=document.createElementNS('http://www.w3.org/2000/svg','marker');
+      mk.setAttribute('id',mid); mk.setAttribute('markerWidth','7'); mk.setAttribute('markerHeight','7');
+      mk.setAttribute('refX','5'); mk.setAttribute('refY','3.5'); mk.setAttribute('orient','auto');
+      const pl=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      pl.setAttribute('points','0 0,7 3.5,0 7'); pl.setAttribute('fill',c.color||'#2e8fd4'); pl.setAttribute('opacity','0.65');
+      mk.appendChild(pl); defs.appendChild(mk);
+
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M ${x1} ${y1} C ${mx} ${y1},${mx} ${y2},${x2} ${y2}`);
+      path.setAttribute('stroke',c.color||'#2e8fd4');
+      path.setAttribute('stroke-width','1.8');
+      path.setAttribute('fill','none');
+      path.setAttribute('opacity','0.5');
+      path.setAttribute('marker-end',`url(#${mid})`);
+      svg.appendChild(path);
+      drawLines(c);
+    });
+  }
+  drawLines(T);
+
+  function renderNode(n){
+    if(!pos[n.id]) return;
+    const p=pos[n.id];
+    let el=els[n.id];
+    if(!el){ el=mkEl(n); world.appendChild(el); els[n.id]=el; }
+    el.style.left=p.x+'px';
+    el.style.top=(p.y+p.h/2)+'px';
+    el.classList.toggle('open',open.has(n.id)&&n.ch.length>0);
+    el.classList.toggle('selected',sel===n.id);
+    if(open.has(n.id)) n.ch.forEach(renderNode);
+  }
+  renderNode(T);
+}
+
+// ── BUILD ELEMENT ─────────────────────────────────────────────────────────────
+function mkEl(n){
+  const div=document.createElement('div');
+  div.className='node'+(n.cls?' '+n.cls:'');
+  div.dataset.id=n.id;
+  div.style.setProperty('--node-color',n.color);
+
+  let h=`<div class="node-card">`;
+  h+=`<div class="node-code">${n.code}</div>`;
+  if(n.label) h+=`<div class="node-label">${n.label.replace(/\n/g,'<br>')}</div>`;
+  if(n.portal==='TBD') h+=`<span class="node-tbd">Portal TBD</span>`;
+  else if(n.portal) h+=`<span class="node-portal">↗ ${n.portal}</span>`;
+  if(n.ch.length) h+=`<div class="xbtn">${open.has(n.id)?'−':'+'}</div>`;
+  h+=`</div>`;
+  div.innerHTML=h;
+
+  let clks=0, ct;
+  div.addEventListener('click',e=>{
+    e.stopPropagation(); clks++;
+    if(clks===1){
+      ct=setTimeout(()=>{
+        clks=0;
+        if(n.ch.length){
+          if(open.has(n.id)) collapse(n); else open.add(n.id);
+          sel=n.id; render();
+        } else { showDetail(n); }
+      },220);
+    } else { clearTimeout(ct); clks=0; showDetail(n); }
+  });
+  return div;
+}
+
+function collapse(n){ open.delete(n.id); n.ch.forEach(collapse); }
+
+// ── DETAIL ────────────────────────────────────────────────────────────────────
+function showDetail(n){
+  sel=n.id; render();
+  document.getElementById('d-code').textContent=n.code;
+  document.getElementById('d-full').textContent=n.d.full||'';
+  let b='';
+  if(n.portal&&n.portal!=='TBD') b+=`<a class="d-portal" href="${n.d.portalUrl||'#'}" target="_blank">↗ ${n.portal}</a>`;
+  if(n.portal==='TBD') b+=`<div style="font-size:11px;color:var(--gray);padding:9px 12px;background:#f8f9fa;border-radius:5px;border:1px dashed var(--gray-lt);margin-top:6px">⧗ Portal — To Be Identified</div>`;
+  b+=`<div class="d-div"></div><div class="d-sec">Description</div><div class="d-desc">${n.d.desc||''}</div>`;
+  if(n.d.tags&&n.d.tags.length){
+    b+=`<div class="d-div"></div><div class="d-sec">Status</div>`;
+    n.d.tags.forEach(t=>b+=`<span class="tag ${t.c}">${t.l}</span>`);
+  }
+  if(n.ch.length){
+    b+=`<div class="d-div"></div><div class="d-sec">Subsystems (${n.ch.length})</div>`;
+    n.ch.forEach(c=>{
+      b+=`<div class="child-row" onclick="focusNode('${c.id}')">
+        <div class="cdot" style="background:${c.color}"></div>
+        <div><strong style="font-size:11px">${c.code}</strong><br>
+        <span style="font-size:10px;color:var(--text-dim)">${(c.label||'').replace(/\n/g,' ')}</span></div>
+      </div>`;
+    });
+  }
+  document.getElementById('d-body').innerHTML=b;
+  document.getElementById('detail').classList.add('open');
+}
+
+function closeDetail(){ document.getElementById('detail').classList.remove('open'); sel=null; render(); }
+function focusNode(id){ const n=find(T,id); if(!n) return; if(n.ch.length){open.add(n.id);render();} showDetail(n); }
+function find(n,id){ if(n.id===id) return n; for(const c of n.ch){const f=find(c,id);if(f)return f;} return null; }
+
+// ── PAN & ZOOM ────────────────────────────────────────────────────────────────
+const vp=document.getElementById('viewport');
+vp.addEventListener('mousedown',e=>{
+  if(e.target.closest('.node')) return;
+  drag=true; ds={x:e.clientX,y:e.clientY}; ps={...pan}; vp.classList.add('dragging');
+});
+window.addEventListener('mousemove',e=>{ if(!drag) return; pan.x=ps.x+e.clientX-ds.x; pan.y=ps.y+e.clientY-ds.y; render(); });
+window.addEventListener('mouseup',()=>{ drag=false; vp.classList.remove('dragging'); });
+vp.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const d=e.deltaY>0?0.92:1.08;
+  const r=vp.getBoundingClientRect();
+  const mx=e.clientX-r.left, my=e.clientY-r.top;
+  pan.x=mx-(mx-pan.x)*d; pan.y=my-(my-pan.y)*d;
+  zoom=Math.max(0.2,Math.min(3,zoom*d)); render();
+},{passive:false});
+
+// ── CONTROLS ──────────────────────────────────────────────────────────────────
+function expandAll(){ function a(n){if(n.ch.length)open.add(n.id);n.ch.forEach(a);} a(T); render(); }
+function collapseAll(){ open.clear(); open.add('msm'); Object.values(els).forEach(e=>e.remove()); els={}; render(); }
+function resetView(){
+  zoom=1; pan={x:80,y:40};
+  open.clear(); open.add('msm'); open.add('samplicity');
+  Object.values(els).forEach(e=>e.remove()); els={}; render();
+}
+
+// touch
+let ld=null;
+vp.addEventListener('touchstart',e=>{
+  if(e.touches.length===2) ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  else if(!e.target.closest('.node')){drag=true;ds={x:e.touches[0].clientX,y:e.touches[0].clientY};ps={...pan};}
+});
+vp.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    if(ld){zoom=Math.max(0.2,Math.min(3,zoom*d/ld));render();} ld=d;
+  } else if(drag){pan.x=ps.x+e.touches[0].clientX-ds.x;pan.y=ps.y+e.touches[0].clientY-ds.y;render();}
+},{passive:false});
+vp.addEventListener('touchend',()=>{drag=false;ld=null;});
+
+window.addEventListener('resize',render);
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
+        
